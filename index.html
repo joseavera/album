@@ -1,0 +1,220 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Fernando & Edgar · Álbum de fotos</title>
+<meta name="theme-color" content="#f7f2ea">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Pinyon+Script&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Montserrat:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  /* ====== CONFIGURACIÓN: pega aquí la URL de tu Apps Script (termina en /exec) ====== */
+  /* (se configura abajo en el <script>, variable SCRIPT_URL) */
+
+  :root{
+    --paper:#f7f2ea; --card:#fffdf9; --ink:#2b2622; --muted:#7d7268;
+    --gold:#b8955a; --gold-soft:#e9d9b8; --gold-deep:#8c6d3c; --line:#e6dccd;
+    --ok:#5b7f5a; --err:#a4493d;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{background:var(--paper);color:var(--ink)}
+  body{
+    font-family:"Cormorant Garamond",Georgia,serif;
+    min-height:100dvh;display:flex;flex-direction:column;align-items:center;
+    padding:max(28px,env(safe-area-inset-top)) 16px max(28px,env(safe-area-inset-bottom));
+    background:
+      radial-gradient(1200px 500px at 50% -10%, #fff 0%, transparent 60%),
+      var(--paper);
+  }
+  .wrap{width:100%;max-width:440px;display:flex;flex-direction:column;align-items:center;text-align:center}
+
+  .thanks{font-family:"Cormorant Garamond",serif;font-style:italic;color:var(--muted);font-size:1.05rem;letter-spacing:.02em}
+  .names{font-family:"Pinyon Script",cursive;font-weight:400;line-height:.95;color:var(--ink);margin:10px 0 2px}
+  .names .n{display:block;font-size:clamp(3rem,15vw,4.2rem)}
+  .names .amp{display:block;font-size:clamp(2rem,9vw,2.6rem);color:var(--gold);margin:-4px 0 -6px}
+  .rule{display:flex;align-items:center;gap:10px;width:70%;margin:14px auto 12px;color:var(--gold)}
+  .rule::before,.rule::after{content:"";flex:1;height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent)}
+  .rule span{font-size:.9rem}
+  .lead{font-family:"Montserrat",sans-serif;font-size:.78rem;letter-spacing:.22em;text-transform:uppercase;color:var(--ink);font-weight:500}
+  .sub{font-family:"Montserrat",sans-serif;font-size:.62rem;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);margin-top:6px}
+
+  .frame{
+    margin:24px 0 20px;width:100%;aspect-ratio:4/5;border-radius:18px;overflow:hidden;position:relative;
+    background:var(--card);border:1px solid var(--line);
+    box-shadow:0 18px 40px -22px rgba(60,40,20,.35);
+    display:grid;place-items:center;
+  }
+  .frame img{width:100%;height:100%;object-fit:cover;display:block}
+  .placeholder{padding:28px;color:var(--muted)}
+  .placeholder svg{width:54px;height:54px;color:var(--gold);margin-bottom:10px}
+  .placeholder p{font-style:italic;font-size:1.15rem}
+
+  .name-field{width:100%;margin-bottom:14px}
+  .name-field input{
+    width:100%;font:500 .95rem "Montserrat",sans-serif;color:var(--ink);text-align:center;
+    background:var(--card);border:1px solid var(--line);border-radius:999px;padding:13px 18px;outline:none;
+  }
+  .name-field input:focus{border-color:var(--gold)}
+  .name-field input::placeholder{color:#b0a598;font-weight:400}
+
+  .btn{
+    width:100%;display:flex;align-items:center;justify-content:center;gap:10px;
+    font:600 .82rem "Montserrat",sans-serif;letter-spacing:.14em;text-transform:uppercase;
+    border:none;border-radius:999px;padding:17px 18px;cursor:pointer;margin-bottom:12px;
+    -webkit-tap-highlight-color:transparent;transition:transform .12s ease, filter .2s;
+  }
+  .btn:active{transform:scale(.98)}
+  .btn svg{width:20px;height:20px}
+  .btn-primary{background:linear-gradient(180deg,#c9a86c,var(--gold));color:#fff;box-shadow:0 10px 22px -12px rgba(140,109,60,.9)}
+  .btn-ghost{background:var(--gold-soft);color:var(--gold-deep)}
+  .btn[disabled]{filter:grayscale(.4) opacity(.6);pointer-events:none}
+  input[type=file]{display:none}
+
+  .status{min-height:3.2em;margin-top:6px;font-family:"Montserrat",sans-serif;font-size:.82rem;color:var(--muted)}
+  .status.ok{color:var(--ok)} .status.err{color:var(--err)}
+  .bar{height:4px;width:100%;background:var(--line);border-radius:4px;overflow:hidden;margin:10px 0 8px;display:none}
+  .bar i{display:block;height:100%;width:0;background:var(--gold);transition:width .25s}
+
+  .thumbs{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;width:100%;margin-top:8px}
+  .thumbs img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:8px;border:1px solid var(--line)}
+  .counter{font-style:italic;color:var(--muted);margin-top:14px;font-size:1rem}
+
+  footer{margin-top:auto;padding-top:28px;font-family:"Montserrat",sans-serif;font-size:.62rem;letter-spacing:.18em;text-transform:uppercase;color:#b0a598}
+</style>
+</head>
+<body>
+<main class="wrap">
+  <p class="thanks">¡Gracias por acompañarnos!</p>
+  <h1 class="names"><span class="n">Tessa</span><span class="amp">&amp;</span><span class="n">Valentina</span></h1>
+  <div class="rule"><span>✦</span></div>
+  <p class="lead">Sube aquí todas las fotos</p>
+  <p class="sub">de este día tan especial para nosotros</p>
+
+  <div class="frame" id="frame">
+    <div class="placeholder">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.6"/></svg>
+      <p>Tus fotos aparecerán aquí</p>
+    </div>
+  </div>
+
+  <div class="name-field"><input id="guest" type="text" maxlength="40" placeholder="Tu nombre (opcional)" autocomplete="name"></div>
+
+  <button class="btn btn-primary" id="btnCam">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.6"/></svg>
+    Tomar foto
+  </button>
+  <button class="btn btn-ghost" id="btnGal">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="2"/><path d="m21 16-5-5-9 9"/></svg>
+    Subir desde galería
+  </button>
+  <input type="file" id="inCam" accept="image/*" capture="environment">
+  <input type="file" id="inGal" accept="image/*" multiple>
+
+  <div class="bar" id="bar"><i></i></div>
+  <p class="status" id="status" role="status" aria-live="polite"></p>
+  <div class="thumbs" id="thumbs"></div>
+  <p class="counter" id="counter"></p>
+
+  <footer>Sin registros · sin apps · solo toma y sube</footer>
+</main>
+
+<script>
+/* =================== CONFIGURACIÓN =================== */
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyMvyBPj3zSe1J2PCuNF2X1MUAd3Ms7kz1J8OLOtcC2tzGle5OmNwHYAN0nkXW4uPI/exec";
+const MAX_SIDE   = 2048;   // px del lado mayor (buena calidad, carga rápida)
+const QUALITY    = 0.88;   // calidad JPEG
+/* ===================================================== */
+
+const $ = id => document.getElementById(id);
+const statusEl = $("status"), bar = $("bar"), barFill = bar.querySelector("i");
+let sent = 0;
+
+try { $("guest").value = localStorage.getItem("guestName") || ""; } catch(e){}
+$("guest").addEventListener("change", e => { try{ localStorage.setItem("guestName", e.target.value.trim()); }catch(_){} });
+
+$("btnCam").onclick = () => $("inCam").click();
+$("btnGal").onclick = () => $("inGal").click();
+$("inCam").onchange = e => handle(e.target);
+$("inGal").onchange = e => handle(e.target);
+
+function setStatus(msg, cls=""){ statusEl.textContent = msg; statusEl.className = "status " + cls; }
+function lock(v){ $("btnCam").disabled = v; $("btnGal").disabled = v; }
+
+async function handle(input){
+  const files = [...input.files];
+  input.value = "";
+  if (!files.length) return;
+  if (SCRIPT_URL.startsWith("PEGA_AQUI")) { setStatus("Falta configurar la URL del álbum (SCRIPT_URL).", "err"); return; }
+
+  lock(true); bar.style.display = "block";
+  let ok = 0, fail = 0;
+  for (let i = 0; i < files.length; i++) {
+    setStatus(`Subiendo ${i+1} de ${files.length}…`);
+    barFill.style.width = `${(i / files.length) * 100}%`;
+    try {
+      const { blob, url } = await compress(files[i]);
+      showPreview(url);
+      await upload(blob, files[i].name);
+      addThumb(url); ok++; sent++;
+    } catch (err) { console.error(err); fail++; }
+  }
+  barFill.style.width = "100%";
+  setTimeout(() => { bar.style.display = "none"; barFill.style.width = "0"; }, 600);
+  lock(false);
+
+  if (fail === 0) setStatus(ok === 1 ? "¡Listo! Tu foto ya está en el álbum. Gracias ♡" : `¡Listo! ${ok} fotos subidas. Gracias ♡`, "ok");
+  else setStatus(`Se subieron ${ok}, fallaron ${fail}. Revisa tu conexión e inténtalo de nuevo.`, "err");
+  $("counter").textContent = sent ? `Has compartido ${sent} ${sent === 1 ? "foto" : "fotos"}` : "";
+}
+
+function showPreview(url){
+  $("frame").innerHTML = `<img src="${url}" alt="Última foto subida">`;
+}
+function addThumb(url){
+  const img = new Image(); img.src = url; img.alt = "";
+  $("thumbs").prepend(img);
+}
+
+/* Reduce tamaño en el teléfono antes de subir (más rápido con mala señal) */
+async function compress(file){
+  try {
+    const bmp = await createImageBitmap(file, { imageOrientation: "from-image" });
+    const s = Math.min(1, MAX_SIDE / Math.max(bmp.width, bmp.height));
+    const c = document.createElement("canvas");
+    c.width = Math.round(bmp.width * s); c.height = Math.round(bmp.height * s);
+    c.getContext("2d").drawImage(bmp, 0, 0, c.width, c.height);
+    const blob = await new Promise(r => c.toBlob(r, "image/jpeg", QUALITY));
+    if (!blob) throw 0;
+    return { blob, url: URL.createObjectURL(blob) };
+  } catch (_) {
+    // Si el navegador no puede procesarla (p. ej. HEIC en Android), se sube tal cual
+    return { blob: file, url: URL.createObjectURL(file) };
+  }
+}
+
+function toBase64(blob){
+  return new Promise((res, rej) => {
+    const r = new FileReader();
+    r.onload = () => res(String(r.result).split(",")[1]);
+    r.onerror = rej; r.readAsDataURL(blob);
+  });
+}
+
+async function upload(blob, originalName){
+  const guest = ($("guest").value || "Invitado").trim().replace(/[^\p{L}\p{N} _-]/gu, "").slice(0, 40) || "Invitado";
+  const stamp = new Date().toISOString().replace(/[:T]/g, "-").slice(0, 19);
+  const ext = blob.type === "image/jpeg" ? "jpg" : (originalName.split(".").pop() || "jpg");
+  const payload = {
+    name: `${stamp}_${guest}_${Math.random().toString(36).slice(2,6)}.${ext}`,
+    mimeType: blob.type || "image/jpeg",
+    data: await toBase64(blob)
+  };
+  // text/plain evita el "preflight" CORS con Apps Script
+  const r = await fetch(SCRIPT_URL, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify(payload) });
+  const j = await r.json();
+  if (!j.ok) throw new Error(j.error || "Error al guardar");
+}
+</script>
+</body>
+</html>
